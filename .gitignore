@@ -2,3 +2,5 @@ test_*
 .idea
 .vscode
 .DS_Store
+llvm
+stack_allocator_test

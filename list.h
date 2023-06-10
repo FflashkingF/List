@@ -92,8 +92,7 @@ class List {
     List(const List& other)
         : alloc(std::allocator_traits<Alloc>::select_on_container_copy_construction(
               other
-                  .alloc)) /*alloc(AllocTraits::select_on_container_copy_construction(other.alloc))*/
-    {
+                  .alloc)) {
         fakeNode = {&fakeNode, &fakeNode};
         const_iterator it = other.cbegin();
         while (it != other.cend()) {
@@ -121,7 +120,7 @@ class List {
         List copy(
             flag
                 ? other.alloc
-                : alloc);  // AllocTraits::seclect_on_container_copy_constructor(other.alloc)
+                : alloc);
         const_iterator it = other.cbegin();
         while (it != other.cend()) {
             try {

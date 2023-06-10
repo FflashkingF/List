@@ -2,9 +2,6 @@
 #include <iostream>
 #include <memory>
 
-template <typename T, size_t N>
-class StackAllocator;
-
 template <size_t N>
 class StackStorage {
   public:
