@@ -4,3 +4,4 @@ test_*
 .DS_Store
 llvm
 stack_allocator_test
+llvm.sh

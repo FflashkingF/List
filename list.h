@@ -227,12 +227,12 @@ class List {
         }
 
         reference operator*() {
-            Node* real = reinterpret_cast<Node*>(node_ptr);
+            Node* real = static_cast<Node*>(node_ptr);
             return real->val;
         }
 
         pointer operator->() {
-            Node* real = reinterpret_cast<Node*>(node_ptr);
+            Node* real = static_cast<Node*>(node_ptr);
             return &(real->val);
         }
     };
@@ -302,7 +302,7 @@ class List {
 
     void erase(const_iterator it) {
         --sz;
-        Node* node_to_delete = reinterpret_cast<Node*>(it.node_ptr);
+        Node* node_to_delete = static_cast<Node*>(it.node_ptr);
         BaseNode* prev = node_to_delete->prev;
         BaseNode* next = node_to_delete->next;
         prev->next = next;
