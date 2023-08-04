@@ -28,7 +28,7 @@ class List {
 
     [[no_unique_address]] NodeAlloc alloc;
     size_t sz = 0;
-    mutable BaseNode fakeNode;
+    BaseNode fakeNode;
 
     void default_push() {
         iterator it = begin();
@@ -259,7 +259,7 @@ class List {
         return cend();
     }
     const_iterator cend() const {
-        return const_iterator(&fakeNode);
+        return const_iterator(fakeNode.next->prev);
     }
 
     reverse_iterator rbegin() {
