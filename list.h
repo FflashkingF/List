@@ -51,7 +51,7 @@ class List {
     BaseNode* node_ptr = nullptr;
 
    public:
-    using value_type = std::conditional_t<IsConst, const T&, T&>;
+    using value_type = std::conditional_t<IsConst, const T, T>;
     using reference = std::conditional_t<IsConst, const T&, T&>;
     using pointer = std::conditional_t<IsConst, const T*, T*>;
     using difference_type = ptrdiff_t;
