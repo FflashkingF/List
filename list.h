@@ -47,7 +47,7 @@ class List {
   class CommonIterator {
    private:
     friend List;
-    // std::conditional_t<IsConst, const Node*, Node*> node_ptr = nullptr;
+    //std::conditional_t<IsConst, const BaseNode*, BaseNode*> node_ptr = nullptr;
     BaseNode* node_ptr = nullptr;
 
    public:
