@@ -21,7 +21,7 @@ class List {
 
   using NodeAlloc =
       typename std::allocator_traits<Alloc>::template rebind_alloc<Node>;
-  using NodeAllocTraits =  std::allocator_traits<NodeAlloc>;
+  using NodeAllocTraits = std::allocator_traits<NodeAlloc>;
 
   [[no_unique_address]] NodeAlloc allocator;
   size_t sz = 0;
@@ -138,7 +138,8 @@ class List {
   NodeAlloc get_allocator() const { return allocator; }
 
   List(const List& another)
-      : allocator(NodeAllocTraits::select_on_container_copy_construction(another.allocator)),
+      : allocator(NodeAllocTraits::select_on_container_copy_construction(
+            another.allocator)),
         fakeNode{&fakeNode, &fakeNode} {
     const_iterator it = another.cbegin();
     while (it != another.cend()) {
@@ -228,8 +229,10 @@ class List {
   void pop_back() { erase(--end()); }
   void pop_front() { erase(begin()); }
 
-  using iterator = CommonIterator<false>;//std::iterator_traits<CommonIterator<false>>;
-  using const_iterator = CommonIterator<true>;//std::iterator_traits<CommonIterator<true>>;
+  using iterator =
+      CommonIterator<false>;  // std::iterator_traits<CommonIterator<false>>;
+  using const_iterator =
+      CommonIterator<true>;  // std::iterator_traits<CommonIterator<true>>;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
