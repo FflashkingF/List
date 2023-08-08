@@ -19,21 +19,20 @@ class List {
         : val(std::move(value)) {}  // noexcept is not necessary so that's it
   };
 
-  using NodeAllocator =
+  using NodeAlloc =
       typename std::allocator_traits<Alloc>::template rebind_alloc<Node>;
-  using AllocTraits =
-      typename std::allocator_traits<Alloc>::template rebind_traits<Node>;
+  using NodeAllocTraits =  std::allocator_traits<NodeAlloc>;
 
-  [[no_unique_address]] NodeAllocator alloc;
+  [[no_unique_address]] NodeAlloc allocator;
   size_t sz = 0;
   BaseNode fakeNode;
 
   void default_push() {
-    Node* new_node = AllocTraits::allocate(alloc, 1);
+    Node* new_node = NodeAllocTraits::allocate(allocator, 1);
     try {
-      AllocTraits::construct(alloc, new_node);
+      NodeAllocTraits::construct(allocator, new_node);
     } catch (...) {
-      AllocTraits::deallocate(alloc, new_node, 1);
+      NodeAllocTraits::deallocate(allocator, new_node, 1);
       throw;
     }
     ++sz;
@@ -47,7 +46,8 @@ class List {
   class CommonIterator {
    private:
     friend List;
-    //std::conditional_t<IsConst, const BaseNode*, BaseNode*> node_ptr = nullptr;
+    // std::conditional_t<IsConst, const BaseNode*, BaseNode*> node_ptr =
+    // nullptr;
     BaseNode* node_ptr = nullptr;
 
    public:
@@ -103,25 +103,12 @@ class List {
   };
 
  public:
-  List(const Alloc& external_allocator = Alloc())
-      : alloc(external_allocator), fakeNode{&fakeNode, &fakeNode} {}
-
-  List(size_t n, const Alloc& external_allocator = Alloc())
-      : alloc(external_allocator), fakeNode{&fakeNode, &fakeNode} {
-    while (sz < n) {
-      try {
-        default_push();
-      } catch (...) {
-        while (sz != 0u) {
-          pop_back();
-        }
-        throw;
-      }
-    }
-  }
+  List() : allocator{}, fakeNode{&fakeNode, &fakeNode} {}
+  List(const Alloc& external_allocator)
+      : allocator(external_allocator), fakeNode{&fakeNode, &fakeNode} {}
 
   List(size_t n, const T& el, const Alloc& external_allocator = Alloc())
-      : alloc(external_allocator), fakeNode{&fakeNode, &fakeNode} {
+      : allocator(external_allocator), fakeNode{&fakeNode, &fakeNode} {
     while (sz < n) {
       try {
         push_back(el);
@@ -134,11 +121,24 @@ class List {
     }
   }
 
-  NodeAllocator get_allocator() const { return alloc; }
+  List(size_t n, const Alloc& external_allocator = Alloc())
+      : allocator(external_allocator), fakeNode{&fakeNode, &fakeNode} {
+    while (sz < n) {
+      try {
+        default_push();
+      } catch (...) {
+        while (sz != 0u) {
+          pop_back();
+        }
+        throw;
+      }
+    }
+  }
+
+  NodeAlloc get_allocator() const { return allocator; }
 
   List(const List& another)
-      : alloc(
-            AllocTraits::select_on_container_copy_construction(another.alloc)),
+      : allocator(NodeAllocTraits::select_on_container_copy_construction(another.allocator)),
         fakeNode{&fakeNode, &fakeNode} {
     const_iterator it = another.cbegin();
     while (it != another.cend()) {
@@ -155,7 +155,7 @@ class List {
   }
 
   List(List&& another)
-      : alloc(std::move(another.alloc)),
+      : allocator(std::move(another.allocator)),
         sz(another.sz),
         fakeNode{&fakeNode, &fakeNode} {
     if (sz) {
@@ -172,7 +172,7 @@ class List {
   }
 
   List& operator=(const List& another) {
-    List copy(alloc);
+    List copy(allocator);
     const_iterator it = another.cbegin();
     while (it != another.cend()) {
       try {
@@ -186,8 +186,8 @@ class List {
       }
     }
     swap(copy);
-    if (AllocTraits::propagate_on_container_copy_assignment::value) {
-      alloc = another.alloc;
+    if (NodeAllocTraits::propagate_on_container_copy_assignment::value) {
+      allocator = another.allocator;
     }
     return *this;
   }
@@ -195,9 +195,9 @@ class List {
   List& operator=(List&& another) {
     List copy(std::move(another));
     swap(copy);
-    if (!AllocTraits::propagate_on_container_swap::value &&
-        AllocTraits::propagate_on_move_assignment::value) {
-      std::swap(alloc, copy.alloc);
+    if (!NodeAllocTraits::propagate_on_container_swap::value &&
+        NodeAllocTraits::propagate_on_move_assignment::value) {
+      std::swap(allocator, copy.allocator);
     }
     return *this;
   }
@@ -216,8 +216,8 @@ class List {
       another.fakeNode.next->prev = another.fakeNode.prev->next =
           &another.fakeNode;
     }
-    if (AllocTraits::propagate_on_container_swap::value) {
-      std::swap(alloc, another.alloc);
+    if (NodeAllocTraits::propagate_on_container_swap::value) {
+      std::swap(allocator, another.allocator);
     }
   }
 
@@ -228,8 +228,8 @@ class List {
   void pop_back() { erase(--end()); }
   void pop_front() { erase(begin()); }
 
-  using iterator = CommonIterator<false>;
-  using const_iterator = CommonIterator<true>;
+  using iterator = CommonIterator<false>;//std::iterator_traits<CommonIterator<false>>;
+  using const_iterator = CommonIterator<true>;//std::iterator_traits<CommonIterator<true>>;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -254,11 +254,11 @@ class List {
   }
 
   void insert(const_iterator it, const T& el) {
-    Node* new_node = AllocTraits::allocate(alloc, 1);
+    Node* new_node = NodeAllocTraits::allocate(allocator, 1);
     try {
-      AllocTraits::construct(alloc, new_node, el);
+      NodeAllocTraits::construct(allocator, new_node, el);
     } catch (...) {
-      AllocTraits::deallocate(alloc, new_node, 1);
+      NodeAllocTraits::deallocate(allocator, new_node, 1);
       throw;
     }
     ++sz;
@@ -278,7 +278,7 @@ class List {
     BaseNode* next = node_to_delete->next;
     prev->next = next;
     next->prev = prev;
-    AllocTraits::destroy(alloc, node_to_delete);
-    AllocTraits::deallocate(alloc, node_to_delete, 1);
+    NodeAllocTraits::destroy(allocator, node_to_delete);
+    NodeAllocTraits::deallocate(allocator, node_to_delete, 1);
   }
 };
