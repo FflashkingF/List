@@ -47,12 +47,12 @@ class StackAllocator {
     template <typename U>
     bool operator==(const StackAllocator<U, N>& other) {
         return stack == other.stack;
-    };
+    }
 
     template <typename U>
     bool operator!=(const StackAllocator<U, N>& other) {
         return stack != other.stack;
-    };
+    }
 
     template <typename U>
     struct rebind {
